@@ -1,0 +1,157 @@
+<?php $currentUrl = Mage::helper('core/url')->getCurrentUrl();?>
+<?php $burl=explode("/",$currentUrl);?>
+<?php $ml=count($burl);?>
+<?php $ml=$burl[$ml-2];?>
+<?php $burls=end($burl);?>
+<?php $model=Mage::getModel("attributesplash/page");?>
+<?php //print_r($model);?>
+<?php 
+      $db = Mage::getSingleton('core/resource')->getConnection('core_read');
+     $result1 = $db->query('SELECT * FROM attributesplash_page WHERE url_key="'.$burls.'"');
+     $rows1 = $result1->fetchAll(PDO::FETCH_ASSOC);?>
+<?php $result2 = $db->query('SELECT * FROM eav_attribute_option WHERE option_id="'.$rows1[0]['option_id'].'"');
+     $rows2 = $result2->fetchAll(PDO::FETCH_ASSOC);?>
+
+<?php $_splashMenu 	= $this->getChildHtml('splash.nav'); ?>
+<?php $_helper = Mage::helper('catalog/category') ?>
+<?php $_categories = $_helper->getStoreCategories() ?>
+
+  <div class="s-nav">    
+    	<div class="left"> 
+        <span class="left-spn"><img src="<?php echo $this->getSkinUrl('images/'); ?>header-text.png" /></span>
+    <?php 
+		$layer = Mage::getSingleton('catalog/layer');
+		$_category = $layer->getCurrentCategory();
+		$currentCategoryId= $_category->getId();
+		 $parentId= $_category->getParentId();
+		if($parentId==10 || $this->getRequest()->getControllerName()=='index'){$proactclass = 'activeLink';}else{$proactclass = '';}
+		if($parentId==11){$actclass = 'activeLink';}else{$actclass = '';}
+    ?>    
+        
+  <div class="tab-box"> 
+
+<?php if (count($_categories) > 0): $cnti = 1; ?>
+       <?php foreach($_categories as $_category): ?>
+		<?php $carr[$cnti] = $_category->getId(); ?>
+		<?php if($cnti == 1){ 
+			if(Mage::app()->getRequest()->getModuleName() !='splash' && $parentId == 1){ 
+				$act = ' activeLink';
+				}else {
+				$act = ' activeLink';
+			}
+			
+			if(Mage::app()->getRequest()->getModuleName() =='splash' && $rows2[0]['attribute_id']==143){
+				$act = ' ';
+			}
+		} ?>
+	
+               <a href="javascript:;" class="tabLink <?php if($cnti == 1) echo 'first-tab'.$act ?> <?php if($parentId==$_category->getId()) echo 'activeLink';?>" id="cont-<?php echo $cnti; ?>"> <small>
+                    <?php echo $_category->getName() ?>
+             </small>   </a>
+       <?php $cnti++; endforeach; ?>
+
+<?php endif; ?>
+ <a href="javascript:;" class="tabLink <?php if(Mage::app()->getRequest()->getModuleName() =='splash' && $rows2[0]['attribute_id']==143){ echo 'activeLink';} else {echo '';}?>" id="brand-3" onClick='displaySubBrand()'><small>Ambiente</small></a>   
+     
+  
+  </div>
+         
+        <?php $cats = Mage::getModel('catalog/category')->load(2)->getChildrenCategories();
+			  $catarr=array();$subcatarr=array();
+			  $secarr = array();$ii=1;
+			  foreach($cats as $category){
+				$catarr[$category->getId()]=$category->getName();
+				$subcats = Mage::getModel('catalog/category')->load($category->getId())->getChildrenCategories();
+				
+				  if($subcats){
+					  if($ii==1){?>
+ 						<div class="tabcontent <?php if($parentId==$carr[$ii] || Mage::app()->getRequest()->getModuleName() !='splash' && $parentId == 1){echo '';}else{ 
+							if(Mage::app()->getRequest()->getModuleName() =='splash' && $rows2[0]['attribute_id']==143){
+							echo 'hide';
+							}
+						}?>" id="cont-<?php echo $ii; ?>-1"> 
+                        <ul>
+						 <?php	 $t=1;		  
+						  foreach($subcats as $subcategory){ ?>
+							 <li class="<?php echo 'produto11w'.$t.' cateone' ; ?>">
+					<a style="margin:0px;" href="<?php echo $subcategory->getUrl();?>"><?php if(Mage::getModel('catalog/category')->load($subcategory->getId())->getThumbnail()){ ?><img src="<?php echo Mage::getBaseUrl('media').'catalog/category/'.Mage::getModel('catalog/category')->load($subcategory->getId())->getThumbnail()?>" alt="<?php echo $subcategory->getName();?>" /><?php } ?><span><?php echo $subcategory->getName();?></span></a>
+						<?php  $t++; }?></li></ul></div>
+                          <?php 
+					  }else{?>
+                      <div class="tabcontent <?php if($parentId==$carr[$ii] ){echo '';}else{echo 'hide';}?>" id="cont-<?php echo $ii; ?>-1"> 
+                      <ul>
+                      <?php  $t=1;
+					  	 foreach($subcats as $subcategory){
+							 ?> <li class="<?php echo 'ambiente'.$t.' catetwo';?>">
+							<a href="<?php echo $subcategory->getUrl();?>"><?php echo $subcategory->getName();?></a>
+						<?php  $t++;	//$secarr[$subcategory->getId()]=$subcategory->getName();
+						  }
+						  ?></li></ul>
+                          </div>
+                          <?php
+					  }
+				  }	
+				  $ii++;		
+			  }
+
+ ?>
+ 
+  <div class="tabcontent <?php if(Mage::app()->getRequest()->getModuleName() =='splash'){echo '';}else{echo 'hide';}?><?php if($rows2[0]['attribute_id']==81 && $ml!='l'){echo 'hide';}?>" id="brand-3-1"> 
+    <li><?php echo $_splashMenu ?></li>
+  </div>
+
+  <div class="tabcontent <?php if(Mage::app()->getRequest()->getModuleName() =='splash'){echo '';}else{echo 'hide';}?><?php if($rows2[0]['attribute_id']==143 && $ml!='l'){echo 'hide';}?>" id="brand-4-1"> 
+    <li><?php echo $_splashMenu ?></li>
+  </div>
+  
+      <script type="text/javascript">
+		 jQuery('#brand-3-1 ul:first').hide();
+		 jQuery('#brand-4-1 ul:last').hide();
+		 jQuery('#brand-4-1 ul:first').hide();
+		  jQuery(document).ready(function() {
+			jQuery(".tabLink").each(function(){
+			  jQuery(this).click(function(){
+				tabeId = jQuery(this).attr('id');
+				jQuery(".tabLink").each(function(){
+					jQuery(".tabLink").removeClass("activeLink");
+				});
+				jQuery(this).addClass("activeLink");
+				jQuery(".tabcontent").addClass("hide");
+				if(tabeId=='brand-3'){
+					jQuery('#brand-3-1 ul:first').hide();
+				 }
+				if(tabeId=='brand-4'){
+					jQuery('#brand-4-1 ul:first').hide();
+					jQuery('#brand-4-1 ul:last').hide();
+				 }
+				jQuery("#"+tabeId+"-1").removeClass("hide");
+				return false;	  
+			  });
+			});  
+  });
+  //no display sub-brand
+	function nodisplaySubBrand(){
+			url = window.location;
+			pesquisa = new String(url);
+			retorno = pesquisa.search("p=");				
+			retorno_two = pesquisa.search("limit=");
+			retorno_three = pesquisa.search("dir=");			
+			if(retorno >= 0 || retorno_two >= 0 || retorno_three >= 0 ){				
+				lenClass = document.getElementsByClassName('sub-brand');
+				lenClass[1].style.display="none";				
+			}			
+	}
+	//display sub-brand onClik id="brand-3"
+	function displaySubBrand(){			
+				var lenClass = document.getElementsByClassName('sub-brand');			
+				lenClass[1].style.display="block";
+				}			
+				window.onload = nodisplaySubBrand();
+				
+	//jQuery for link line-h-inspiracao
+	replh = jQuery('.tabcontent #id_sub-brand1 .line-h-inspiracao ');
+	jQuery(replh).mouseenter(function(){jQuery(replh).css("color","#31abd6")});														
+	repl = jQuery('.tabcontent #id_sub-brand1 .line-h-inspiracao ');
+	jQuery(repl).mouseout(function(){jQuery(repl).css("color","#d99b1a")});	
+	
+</script>
